@@ -28,7 +28,7 @@ function Navbar() {
             </Link>
             <nav className='hidden md:flex md:items-center md:justify-between flex-1'>
                 <div>
-                    <ul className='flex items-center justify-center space-x-4 p-4'>
+                    <ul className='flex  items-center justify-center space-x-4 p-4'>
                         {navItmes.map((item) => (
                             <li key={item.name}>
                                 <Link href={item.href} className='text-sm font-medium text-muted-foreground hover:text-primary'>
@@ -44,7 +44,8 @@ function Navbar() {
                         isPending ? (
                             <span className='text-sm text-muted-foreground'>Loading...</span>
                         ) : session ? (
-                            <UserDropDown email={session.user.email} image={session.user.image || ""} name={session.user.name}/>
+                            <UserDropDown email={session.user.email} image={session.user.image || ""} name={ session?.user.name && session?.user.name.length > 0 ?
+                  session?.user.name?.charAt(0).toUpperCase() : session?.user.email?.charAt(0).toUpperCase() || "U"}/>
                         ) : (
                             <Link href="/login" className={buttonVariants({
                                 variant: 'secondary',
