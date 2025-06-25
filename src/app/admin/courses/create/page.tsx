@@ -16,6 +16,7 @@ import { Select } from '@radix-ui/react-select'
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Courselevel } from '@/generated/prisma'
 import RichTextEditor from '@/components/rich-text-editor/textEditor'
+import Uploader from '@/components/file-uploader/Uploader'
 
 export default function CourseCreationPage() {
      // 1. Define your form.
@@ -125,8 +126,8 @@ export default function CourseCreationPage() {
                     render={({ field }) => (
                         <FormItem className='mb-4 w-full'>
                             <FormLabel>thumbnail image</FormLabel>
-                            <FormControl> 
-                                <Input placeholder='thumbnail url' {...field} />
+                            <FormControl>
+                            <Uploader />    
                             </FormControl>
                             <FormMessage />
                         </FormItem>
