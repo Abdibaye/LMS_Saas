@@ -67,7 +67,7 @@ export default function Uploader() {
 
     const {prespresignedUrl, key} = await presignedResponse.json();
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       
       xhr.upload.onprogress = (event) => {
@@ -75,14 +75,35 @@ export default function Uploader() {
         const percentComplete = Math.round((event.loaded / event.total) * 100);
         setFileState((prev) => ({
           ...prev,
-          progress: percentComplete
+          progress: Math.round(percentComplete),
+          key:key 
         }));
+        toast.success("File uploaded succesfully")
+        resolve()
+      } else {
+        reject(new Error("Upload failed..."));
       }
+    }
+    xhr.onerror = () => {
+        reject(new Error("Upload Fieled"))
       }
-    })
+
+      xhr.open("PUT", prespresignedUrl);
+      xhr.setRequestHeader("Content-Type", file.type)
+      xhr.send(file)
+      }
+  )
 
 
    } catch {
+    toast.error("Something went wrong")
+
+    setFileState((prev) => ({
+          ...prev,
+          progress:0,
+          error: true,
+          uploading: false
+        }));
 
    }
   }
@@ -102,6 +123,8 @@ export default function Uploader() {
         isDeleting:false,
         fileType:"image"
       })
+    
+      uploadFile(file)
     }
   }, []);
 
@@ -123,9 +146,24 @@ export default function Uploader() {
       if(fileSizeBig){
         toast.error("File size exceeds the limits")
       }
-
     }
   }
+
+  function renderContent() {
+    if(fileState.uploading){
+      return(
+        <h1>uploading..</h1>
+      )
+    }
+    if(fileState.error){
+      return <RenderErrorState isDragActive={isDragActive} />
+    }
+  }
+
+
+
+
+
    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop, accept: {"image/*": []}, maxFiles: 1, multiple:false, maxSize:5*1024*1024, onDropRejected: rejectedFiles})
   return (
     <Card {...getRootProps()} className={cn("relative border-2 border-dashed transition-colors duration-100 ease-in-out w-full h-64"
@@ -133,7 +171,9 @@ export default function Uploader() {
     )}>  
       <CardContent className='flex items-center justify-center h-full w-full'>
         <input {...getInputProps()} />
-      <RenderEmptyState isDragActive={isDragActive} />
+      {
+        renderContent()
+      }
       </CardContent>
     </Card>
   )
