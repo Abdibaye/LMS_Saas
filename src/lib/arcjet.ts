@@ -1,3 +1,5 @@
+"server-only"
+
 import arcjet, {
     detectBot,
     fixedWindow,

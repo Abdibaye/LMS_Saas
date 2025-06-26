@@ -6,6 +6,7 @@ import { Card, CardContent } from '../ui/card'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid';
+import { FileType } from 'lucide-react'
 
 interface UploaderState {
   id: string | null;
@@ -30,7 +31,62 @@ export default function Uploader() {
     progress: 0,
     isDeleting: false,
     fileType: 'image'
-  })
+  });
+
+  async function uploadFile(file:File){
+    setFileState((prev) => ({...prev,
+      uploading: true,
+      progress: 0,
+  }))
+
+   try{
+
+    const presignedResponse = await fetch('/api/s3/upload', {
+      method: "POST",
+      headers: {"fileType": "application/json"},
+      body: JSON.stringify({
+        fileName: file.name,
+        FileType: file.type,
+        fileSize: file.size,
+        isImage: true
+      })
+    })
+
+    if(!presignedResponse){
+      toast.error("Failed to get presigned URL")
+
+      setFileState((prev) => ({...prev,
+        uploading: true,
+        progress: 0,
+        error: true,
+    }))
+
+    return;
+      
+    }
+
+    const {prespresignedUrl, key} = await presignedResponse.json();
+
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      
+      xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setFileState((prev) => ({
+          ...prev,
+          progress: percentComplete
+        }));
+      }
+      }
+    })
+
+
+   } catch {
+
+   }
+  }
+
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if(acceptedFiles.length > 0){
