@@ -1,7 +1,7 @@
 "use client"
 import React, {useCallback, useState} from 'react'
 import {FileRejection, useDropzone} from 'react-dropzone'
-import {RenderEmptyState, RenderErrorState} from './RenderState'
+import {RenderEmptyState, RenderErrorState, RenderUploaded, RenderUploadingState} from './RenderState'
 import { Card, CardContent } from '../ui/card'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -46,65 +46,67 @@ export default function Uploader() {
       headers: {"fileType": "application/json"},
       body: JSON.stringify({
         fileName: file.name,
-        FileType: file.type,
+        fileType: file.type,
         fileSize: file.size,
         isImage: true
       })
     })
 
-    if(!presignedResponse){
-      toast.error("Failed to get presigned URL")
-
-      setFileState((prev) => ({...prev,
-        uploading: true,
+    if (!presignedResponse.ok) {
+      toast.error("Failed to get presigned URL");
+      setFileState((prev) => ({
+        ...prev,
+        uploading: false,
         progress: 0,
         error: true,
-    }))
-
-    return;
-      
+      }));
+      return;
     }
 
-    const {prespresignedUrl, key} = await presignedResponse.json();
+    const { presignedUrl, key } = await presignedResponse.json();
 
     await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      
+      const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = Math.round((event.loaded / event.total) * 100);
-        setFileState((prev) => ({
-          ...prev,
-          progress: Math.round(percentComplete),
-          key:key 
-        }));
-        toast.success("File uploaded succesfully")
-        resolve()
-      } else {
-        reject(new Error("Upload failed..."));
-      }
-    }
-    xhr.onerror = () => {
-        reject(new Error("Upload Fieled"))
-      }
-
-      xhr.open("PUT", prespresignedUrl);
-      xhr.setRequestHeader("Content-Type", file.type)
-      xhr.send(file)
-      }
-  )
-
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setFileState((prev) => ({
+            ...prev,
+            progress: Math.round(percentComplete),
+            key: key
+          }));
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setFileState((prev) => ({
+            ...prev,
+            uploading: false,
+            progress: 100,
+            key: key
+          }));
+          toast.success("File uploaded successfully");
+          resolve();
+        } else {
+          reject(new Error("Upload failed..."));
+        }
+      };
+      xhr.onerror = () => {
+        reject(new Error("Upload Failed"));
+      };
+      xhr.open("PUT", presignedUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.send(file);
+    });
 
    } catch {
     toast.error("Something went wrong")
-
     setFileState((prev) => ({
-          ...prev,
-          progress:0,
-          error: true,
-          uploading: false
-        }));
-
+      ...prev,
+      progress: 0,
+      error: true,
+      uploading: false
+    }));
    }
   }
 
@@ -150,14 +152,17 @@ export default function Uploader() {
   }
 
   function renderContent() {
-    if(fileState.uploading){
-      return(
-        <h1>uploading..</h1>
-      )
+    if (fileState.uploading) {
+      return <RenderUploadingState progress={fileState.progress} file={fileState.file} />
     }
-    if(fileState.error){
+    if (fileState.error) {
       return <RenderErrorState isDragActive={isDragActive} />
     }
+    if (fileState.objectUrl) {
+      return <RenderUploaded previewUrl={fileState.objectUrl} />
+    }
+    // Render empty state by default 
+    return <RenderEmptyState isDragActive={isDragActive} />
   }
 
 

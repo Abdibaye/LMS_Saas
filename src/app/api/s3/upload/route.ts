@@ -27,10 +27,14 @@ export const fileUploadSchema = z.object({
 
         const uniqueFileName = `${uuidv4()}-${fileName}`
 
+        const bucketName = env.NEXT_PUBLIC_S3_BUCKET_NAME;
+        if (!bucketName) {
+            throw new Error("AWS_S3_BUCKET_NAME environment variable is not set.");
+        }
+
         const command = new PutObjectCommand({
-            Bucket: env.AWS_S3_BUCKET_NAME,
-            Key: fileName,
-            Body: body,
+            Bucket: bucketName,
+            Key: uniqueFileName,
             ContentType: fileType,
         })
 
@@ -40,12 +44,13 @@ export const fileUploadSchema = z.object({
 
         const response = {
             presignedUrl,
-            Key: uniqueFileName
+            key: uniqueFileName
         }; 
 
         return NextResponse.json(response, {status: 200})
         
-    } catch {
+    } catch (err) {
+        console.error("S3 presigned URL error:", err);
         return NextResponse.json(
             {error: "Failed to generate presigned url"},
             {status: 500}
