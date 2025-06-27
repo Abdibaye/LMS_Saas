@@ -162,6 +162,21 @@ export default function Uploader({onChange,value}:UploaderProps) {
     }
   }
 
+  function handleDelete() {
+    setFileState({
+      ...fileState,
+      file: null,
+      objectUrl: undefined,
+      key: undefined,
+      uploading: false,
+      progress: 0,
+      error: false,
+      id: null,
+      isDeleting: false,
+    });
+    onChange('');
+  }
+
   function renderContent() {
     if (fileState.uploading) {
       return <RenderUploadingState progress={fileState.progress} file={fileState.file} />
@@ -170,7 +185,7 @@ export default function Uploader({onChange,value}:UploaderProps) {
       return <RenderErrorState isDragActive={isDragActive} />
     }
     if (fileState.objectUrl) {
-      return <RenderUploaded previewUrl={fileState.objectUrl} />
+      return <RenderUploaded previewUrl={fileState.objectUrl} onDelete={handleDelete} />
     }
     // Pass the handler to open the file dialog
     return <RenderEmptyState isDragActive={isDragActive} onSelectFile={() => inputRef.current?.click()} />

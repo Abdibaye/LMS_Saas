@@ -30,7 +30,13 @@ export function RenderErrorState({isDragActive}:{isDragActive: boolean}){
     )
 }
 
-export function RenderUploaded({ previewUrl }: { previewUrl: string }) {
+export function RenderUploaded({
+  previewUrl,
+  onDelete,
+}: {
+  previewUrl: string;
+  onDelete: () => void;
+}) {
   return (
     <div className="relative flex flex-col items-center w-full h-full">
       <Image
@@ -43,6 +49,7 @@ export function RenderUploaded({ previewUrl }: { previewUrl: string }) {
         variant="destructive"
         size="icon"
         className={cn("absolute top-4 right-4")}
+        onClick={onDelete}
       >
         <XIcon />
       </Button>
