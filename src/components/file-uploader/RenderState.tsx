@@ -4,14 +4,14 @@ import React from 'react'
 import { Button } from '../ui/button'
 import Image from "next/image";
 
-export function RenderEmptyState({isDragActive}: {isDragActive: boolean}) {
+export function RenderEmptyState({isDragActive, onSelectFile}: {isDragActive: boolean, onSelectFile: () => void}) {
   return (
     <div className='text-center'>
       <div className='flex items-center mx-auto justify-center size-12 rounded-full bg-muted mb-2'>
         <CloudUploadIcon className={cn("size-6 text-muted-foreground", isDragActive && "text-primary/90")} />
       </div>
       <p className='text-base font-semibold text-foreground'>Drop your file here or <span className='text-primary font-bold hover:cursor-pointer'>click to upload</span></p>
-      <Button type='button' className='mt-4' >Select File</Button>
+      <Button type='button' className='mt-4' onClick={onSelectFile}>Select File</Button>
     </div>
   )
 }

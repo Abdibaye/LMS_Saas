@@ -1,5 +1,5 @@
 "use client"
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useState, useRef} from 'react'
 import {FileRejection, useDropzone} from 'react-dropzone'
 import {RenderEmptyState, RenderErrorState, RenderUploaded, RenderUploadingState} from './RenderState'
 import { Card, CardContent } from '../ui/card'
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid';
 import { FileType } from 'lucide-react'
+import { Button } from '../ui/button'
 
 interface UploaderState {
   id: string | null;
@@ -21,7 +22,13 @@ interface UploaderState {
 }
 
 
-export default function Uploader() {
+type UploaderProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+
+export default function Uploader({onChange,value}:UploaderProps) {
 
   const [fileState, setFileState] = useState<UploaderState>({
     error: false,
@@ -30,8 +37,11 @@ export default function Uploader() {
     uploading: false,
     progress: 0,
     isDeleting: false,
-    fileType: 'image'
+    fileType: 'image',
+    key: value,
   });
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   async function uploadFile(file:File){
     setFileState((prev) => ({...prev,
@@ -86,6 +96,7 @@ export default function Uploader() {
             key: key
           }));
           toast.success("File uploaded successfully");
+          onChange(key);
           resolve();
         } else {
           reject(new Error("Upload failed..."));
@@ -161,8 +172,8 @@ export default function Uploader() {
     if (fileState.objectUrl) {
       return <RenderUploaded previewUrl={fileState.objectUrl} />
     }
-    // Render empty state by default 
-    return <RenderEmptyState isDragActive={isDragActive} />
+    // Pass the handler to open the file dialog
+    return <RenderEmptyState isDragActive={isDragActive} onSelectFile={() => inputRef.current?.click()} />
   }
 
 
@@ -171,15 +182,14 @@ export default function Uploader() {
 
    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop, accept: {"image/*": []}, maxFiles: 1, multiple:false, maxSize:5*1024*1024, onDropRejected: rejectedFiles})
   return (
-    <Card {...getRootProps()} className={cn("relative border-2 border-dashed transition-colors duration-100 ease-in-out w-full h-64"
+    <Card className={cn("relative border-2 border-dashed transition-colors duration-100 ease-in-out w-full h-64"
       , isDragActive ? "border-primary bg-primary/10 border-solid": "border-border hover:border-primary"
     )}>  
       <CardContent className='flex items-center justify-center h-full w-full'>
-        <input {...getInputProps()} />
-      {
-        renderContent()
-      }
+        <input {...getInputProps()} style={{ display: 'none' }} ref={inputRef} />
+        {renderContent()}
       </CardContent>
     </Card>
   )
 }
+

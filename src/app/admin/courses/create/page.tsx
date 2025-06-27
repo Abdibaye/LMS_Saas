@@ -125,9 +125,9 @@ export default function CourseCreationPage() {
                     <FormField control={form.control} name="fileKey" 
                     render={({ field }) => (
                         <FormItem className='mb-4 w-full'>
-                            <FormLabel>thumbnail image</FormLabel>
+                            <FormLabel>Thumbnail image</FormLabel>
                             <FormControl>
-                            <Uploader />    
+                                <Uploader value={field.value} onChange={field.onChange} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
