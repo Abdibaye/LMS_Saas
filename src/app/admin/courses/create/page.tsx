@@ -42,19 +42,29 @@ export default function CourseCreationPage() {
   })
 
   function onSubmit(values: CourseSchemaType) {
+    console.log('Form submitted with values:', values);
+    
     startTransition(async () => {
-        const { data, error } = await tryCatch(CreteCourse(values))
-        
-        if(error){
-            toast.error("An unexpected error occured. please try again");
-            return
-        } 
-        if(data.status == "success"){
-            toast.success(data.message)
-            form.reset()
-            router.push('/admin/courses')
-        } else if(data.status == "error") {
-            toast.error(data.message)
+        try {
+            const { data, error } = await tryCatch(CreteCourse(values))
+            
+            console.log('Action response:', { data, error });
+            
+            if(error){
+                console.error('Action error:', error);
+                toast.error("An unexpected error occurred. Please try again");
+                return
+            } 
+            if(data.status == "success"){
+                toast.success(data.message)
+                form.reset()
+                router.push('/admin/courses')
+            } else if(data.status == "error") {
+                toast.error(data.message)
+            }
+        } catch (err) {
+            console.error('Form submission error:', err);
+            toast.error("Failed to submit form. Please try again.");
         }
     })
   }  
@@ -103,10 +113,13 @@ export default function CourseCreationPage() {
                     )}> 
                     </FormField>
 
-                    <Button type="submit" className='mt-1'  onClick={
+                    <Button type="button" className='mt-1'  onClick={
                         () => {
-                            const slug = form.getValues('title').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-                            form.setValue('slug', slug);
+                            const title = form.getValues('title');
+                            if (title) {
+                                const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+                                form.setValue('slug', slug);
+                            }
                         }
                     }> 
                         Generate Slug 
