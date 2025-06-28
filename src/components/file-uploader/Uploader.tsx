@@ -6,8 +6,7 @@ import { Card, CardContent } from '../ui/card'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid';
-import { FileType } from 'lucide-react'
-import { Button } from '../ui/button'
+
 
 interface UploaderState {
   id: string | null;

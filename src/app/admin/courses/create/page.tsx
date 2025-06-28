@@ -3,13 +3,12 @@
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { courseCategorySchema, courseLevelSchema, courseSchema, CourseSchemaType, courseStatusSchema } from '@/lib/zod.Schema'
-import { ArrowLeft, PlusIcon, SparkleIcon } from 'lucide-react'
+import { ArrowLeft, Loader2, PlusIcon, SparkleIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@radix-ui/react-select'
@@ -17,8 +16,14 @@ import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/compone
 import { Courselevel } from '@/generated/prisma'
 import RichTextEditor from '@/components/rich-text-editor/textEditor'
 import Uploader from '@/components/file-uploader/Uploader'
+import { tryCatch } from '@/hooks/try-catch'
+import { CreteCourse } from './action'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function CourseCreationPage() {
+    const [Pending, startTransition] = useTransition();
+    const router = useRouter()
      // 1. Define your form.
   const form = useForm<CourseSchemaType>({
     resolver: zodResolver(courseSchema),
@@ -26,21 +31,33 @@ export default function CourseCreationPage() {
       title: '',
       description: '',
       category: 'web-development', 
-      smalldescription: '',
+      smallDescription: '',
       slug: '',
       fileKey: '',
       level: 'beginner',
       price: 0,
-      duration: '',
+      duration: 0,
       status: 'draft',
     },
   })
 
   function onSubmit(values: CourseSchemaType) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
-  }
+    startTransition(async () => {
+        const { data, error } = await tryCatch(CreteCourse(values))
+        
+        if(error){
+            toast.error("An unexpected error occured. please try again");
+            return
+        } 
+        if(data.status == "success"){
+            toast.success(data.message)
+            form.reset()
+            router.push('/admin/courses')
+        } else if(data.status == "error") {
+            toast.error(data.message)
+        }
+    })
+  }  
 
   return (
     <> 
@@ -97,7 +114,7 @@ export default function CourseCreationPage() {
                     </Button>
                      </div>
 
-                    <FormField control={form.control} name="smalldescription" 
+                    <FormField control={form.control} name="smallDescription" 
                     render={({ field }) => (
                         <FormItem className='mb-4'>
                             <FormLabel htmlFor="Small Description">Small Description</FormLabel>
@@ -226,9 +243,24 @@ export default function CourseCreationPage() {
                     )}> 
                     </FormField>
 
-                    <Button type="submit" className='mt-4' disabled={!form.formState.isValid}>
-                        Create Course
-                        <PlusIcon className='ml-2' />
+                    <Button type="submit" className='mt-4' disabled={Pending}>
+                        
+                       {
+                        Pending ? (
+                            <>
+                            Creating...
+
+                            <Loader2 className='animate-spin' />
+                            </>
+                        ):
+                         (
+                            <>
+                            Create Course
+                             <PlusIcon className='ml-2' />
+                            </>
+                         )
+                        
+                       }
                     </Button>
                 </form>
             </Form>

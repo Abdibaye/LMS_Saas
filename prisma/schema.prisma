@@ -76,13 +76,12 @@ model Verification {
 }
 
 model Course {
-  id          String   @id
-
+  id        String  @id @default(uuid()) 
   title       String
   description String
   level       Courselevel @default(beginner)
-  filekey     String
-  duration    Int
+  fileKey     String
+  duration    Float
   price       Float
 
   category    String

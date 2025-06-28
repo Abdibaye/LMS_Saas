@@ -63,7 +63,7 @@ function LoginForm() {
                 Wellcom to Login!
             </CardTitle>
             <CardDescription>
-                Login using github email account
+                Login using github or email account
             </CardDescription>
         </CardHeader>
         
