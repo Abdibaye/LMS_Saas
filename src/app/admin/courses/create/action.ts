@@ -1,5 +1,6 @@
 "use server"
 
+import { requireAdmin } from "@/app/data/admin/require-admin";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/type";
@@ -7,17 +8,9 @@ import { courseSchema, CourseSchemaType } from "@/lib/zod.Schema";
 import { headers } from "next/headers";
 
 export async function CreteCourse(values: CourseSchemaType): Promise<ApiResponse> {
+    const session = await requireAdmin();
     try{
-        console.log('Starting course creation with values:', values);
-        
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-
-        console.log('Session:', session);
-
         if (!session?.user?.id) {
-            console.log('No session or user ID found');
             return {
                 status: 'error',
                 message: 'Authentication required'

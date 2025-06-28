@@ -1,11 +1,10 @@
-"server-only"
-
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 import { env } from "./env";
 import { emailOTP } from "better-auth/plugins"
 import { Resend } from 'resend';
+import { admin } from "better-auth/plugins"
 const resend = new Resend(env.RESEND_API_KEY);
 
 // If your Prisma file is located elsewhere, you can change the path
@@ -31,7 +30,8 @@ export const auth = betterAuth({
                         html: `<p>Your verification code is <strong>${otp}</strong>.</p>`,
                     });
                   }, 
-        }) 
+        }),
+        admin()
 ]
 
 });  
