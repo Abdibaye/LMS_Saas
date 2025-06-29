@@ -1,11 +1,9 @@
 "use server"
-
 import { requireAdmin } from "@/app/data/admin/require-admin";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/type";
 import { courseSchema, CourseSchemaType } from "@/lib/zod.Schema";
-import { headers } from "next/headers";
 
 export async function CreteCourse(values: CourseSchemaType): Promise<ApiResponse> {
     const session = await requireAdmin();
@@ -58,7 +56,6 @@ export async function CreteCourse(values: CourseSchemaType): Promise<ApiResponse
     }catch(error){
         console.error('Course creation error:', error)
         
-        // Handle specific Prisma errors
         if (error instanceof Error) {
             if (error.message.includes('Unique constraint')) {
                 return {
