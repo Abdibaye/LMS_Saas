@@ -5,6 +5,8 @@ import { PersonStanding } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react'
 import EditCourseForm from './_component/EditCourseForm';
+import { useContructUrl } from '@/hooks/use-contruct-url';
+import CourseStructure from './_component/CourseStructure';
 
 type Params = Promise<{courseId:string}>
 
@@ -21,7 +23,7 @@ export default async function EditRoute({params}: {params: Params} ) {
           <TabsTrigger value='basic-info'>
             Basic info
           </TabsTrigger>
-          <TabsTrigger value='basic-info'>
+          <TabsTrigger value='course-structure'>
            Course Structure
           </TabsTrigger>
         </TabsList>
@@ -30,9 +32,20 @@ export default async function EditRoute({params}: {params: Params} ) {
             <CardHeader>
               <CardTitle>Basic Info</CardTitle>
               <CardDescription>Edit basic info about the course</CardDescription>
-            </CardHeader>
+            </CardHeader> 
             <CardContent>
               <EditCourseForm data={data} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='course-structure'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Course Structure</CardTitle>
+              <CardDescription>Here you can update your course structure</CardDescription>
+            </CardHeader> 
+            <CardContent>
+              <CourseStructure />
             </CardContent>
           </Card>
         </TabsContent>

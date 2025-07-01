@@ -60,12 +60,12 @@ export default function EditCourseForm({data}: iAppProps) {
                       toast.error("An unexpected error occurred. Please try again");
                       return
                   } 
-                  if(data.status == "success"){
-                      toast.success(data.message)
+                  if(result.status == "success"){
+                      toast.success(result.message)
                       form.reset()
                       router.push('/admin/courses')
-                  } else if(data.status == "error") {
-                      toast.error(data.message)
+                  } else if(result.status == "error") {
+                      toast.error(result.message)
                   }
               } catch (err) {
                   console.error('Form submission error:', err);

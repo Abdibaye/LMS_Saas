@@ -6,6 +6,7 @@ import { Card, CardContent } from '../ui/card'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid';
+import { useContructUrl } from '@/hooks/use-contruct-url'
 
 
 interface UploaderState {
@@ -28,6 +29,7 @@ type UploaderProps = {
 
 
 export default function Uploader({onChange,value}:UploaderProps) {
+  const fileUrl = useContructUrl(value || '')
 
   const [fileState, setFileState] = useState<UploaderState>({
     error: false,
@@ -38,6 +40,7 @@ export default function Uploader({onChange,value}:UploaderProps) {
     isDeleting: false,
     fileType: 'image',
     key: value,
+    objectUrl:fileUrl
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
