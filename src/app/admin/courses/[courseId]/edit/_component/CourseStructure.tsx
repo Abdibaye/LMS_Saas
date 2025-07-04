@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronLeft, ChevronRight, FileText, Ghost, GripVertical, Trash2 } from 'lucide-react';
 import { CollapsibleTrigger } from '@radix-ui/react-collapsible';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 interface iAppProps {
   data:AdminCourseSingularType
@@ -58,14 +59,53 @@ export default function CourseStructure({data}:iAppProps) {
   function handleDragEnd(event: any) {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      setItems((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+    if(!over || active.id === over.id){
+      return;
     }
-  }
+
+     const activeId = active.id;
+     const overId = over.id;
+     const activeType = active.data.current.type as 'chapter' | 'lesson';
+     const overType = over.data.current.type as 'chapter' | 'lesson';
+      const courseId = data.id;
+
+      if(activeType == 'chapter'){
+        let tartgetChapterId = null;
+
+        if(overType == 'chapter'){
+          tartgetChapterId === overId;
+        } else if(overType === "lesson"){
+          tartgetChapterId = over.data.current?.chapterId ?? null;
+        }
+
+        if(!tartgetChapterId){
+          toast.error("Could not determine the chapter for reordering");
+          return;
+        }
+        
+        const oldIndex = items.findIndex((item) => item.id === activeId); 
+        const newIndex = items.findIndex((item) => item.id === tartgetChapterId);
+
+        if(oldIndex == -1 || newIndex === -1){
+          toast.error("could not find chapter old/new index for reordering")
+
+          return
+        }
+
+        const reordedLocalChapter = arrayMove(items,oldIndex, newIndex)
+
+        const updatedChapterForState = reordedLocalChapter.map((chapter,index) => ({
+          ...chapter,
+          order: index + 1
+        }))
+
+        const previousItems = [...items]
+
+        setItems(updatedChapterForState)
+      }
+    }
+
+  
 
   function SortableItem({ children, id, className, data }: SortableItemProps) {
     const {
@@ -140,7 +180,7 @@ export default function CourseStructure({data}:iAppProps) {
                         {item.lessons.map((lesson) => (
                           <SortableItem key={lesson.id} id={lesson.id} data={{type: "lesson"}}>
                             {(listeners) => (
-                              <div className="flex items-center justify-between gap-2 p-2 hover:bg-accent rounded-md">
+                              <div className="flex items-center justify-between gap-2 hover:bg-accent rounded-md">
                                 <div className="flex items-center gap-2">
                                   <button className="cursor-grab opacity-60 hover:opacity-100" {...listeners}>
                                     <GripVertical className="size-4" />
