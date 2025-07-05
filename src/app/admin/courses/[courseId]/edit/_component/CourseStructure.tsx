@@ -70,21 +70,21 @@ export default function CourseStructure({data}:iAppProps) {
       const courseId = data.id;
 
       if(activeType == 'chapter'){
-        let tartgetChapterId = null;
+        let targetChapterId = null;
 
         if(overType == 'chapter'){
-          tartgetChapterId === overId;
+          targetChapterId = overId;
         } else if(overType === "lesson"){
-          tartgetChapterId = over.data.current?.chapterId ?? null;
+          targetChapterId = over.data.current?.chapterId ?? null;
         }
 
-        if(!tartgetChapterId){
+        if(!targetChapterId){
           toast.error("Could not determine the chapter for reordering");
           return;
         }
         
         const oldIndex = items.findIndex((item) => item.id === activeId); 
-        const newIndex = items.findIndex((item) => item.id === tartgetChapterId);
+        const newIndex = items.findIndex((item) => item.id === targetChapterId);
 
         if(oldIndex == -1 || newIndex === -1){
           toast.error("could not find chapter old/new index for reordering")
@@ -103,7 +103,59 @@ export default function CourseStructure({data}:iAppProps) {
 
         setItems(updatedChapterForState)
       }
+
+      if(activeType === 'lesson' && overType === 'lesson'){
+        const chapterId = active.data.current?.chapterId;
+        const overChapterId = over.data.current?.chapterId;
+
+        if(!chapterId || chapterId != overChapterId ){
+          toast.error("Lesson move between difference chapter or invalide chapter ID is not allowed");
+          return;
+        }
+
+        const chapterIndex = items.findIndex((chapter) => chapter.id === chapterId);
+
+        if(chapterIndex === -1){
+          toast.error("Could not find chapter index for lesson");
+          return
+        }
+
+        const chapterToUpdate = items[chapterIndex];
+
+        const oldLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id === activeId);
+
+
+        const newLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id == overId);
+
+        if(oldLessonIndex === -1 || newLessonIndex === -1){
+          toast.error("Could not find lesson for reordering");
+          return;
+        }
+
+        const reordedLessons = arrayMove(
+          chapterToUpdate.lessons,
+          oldLessonIndex,
+          newLessonIndex
+        );
+
+        const updatedChapterForState = reordedLessons.map((lesson, index) => ({
+          ...lesson,
+          order: index + 1 
+        }));
+
+        const newItems = [...items];
+        
+        newItems[chapterIndex] = {
+          ...chapterToUpdate,
+          lessons: updatedChapterForState,
+        };
+         
+        const previousItems = [...items]
+
+        setItems(newItems)
+      }
     }
+
 
   
 
