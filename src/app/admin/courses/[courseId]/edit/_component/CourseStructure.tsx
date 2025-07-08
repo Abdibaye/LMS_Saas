@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 interface iAppProps {
   data:AdminCourseSingularType
 }
-
+  
 interface SortableItemProps{
   id: string,
   children?: (listeners: DraggableSyntheticListeners) => ReactNode
@@ -123,8 +123,6 @@ export default function CourseStructure({data}:iAppProps) {
         const chapterToUpdate = items[chapterIndex];
 
         const oldLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id === activeId);
-
-
         const newLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id == overId);
 
         if(oldLessonIndex === -1 || newLessonIndex === -1){
@@ -132,27 +130,19 @@ export default function CourseStructure({data}:iAppProps) {
           return;
         }
 
-        const reordedLessons = arrayMove(
-          chapterToUpdate.lessons,
-          oldLessonIndex,
-          newLessonIndex
+        const updatedLessons = arrayMove(chapterToUpdate.lessons, oldLessonIndex, newLessonIndex)
+          .map((lesson, idx) => ({
+            ...lesson,
+            order: idx + 1
+          }));
+
+        const updatedItems = items.map((chapter, idx) =>
+          idx === chapterIndex
+            ? { ...chapter, lessons: updatedLessons }
+            : chapter
         );
 
-        const updatedChapterForState = reordedLessons.map((lesson, index) => ({
-          ...lesson,
-          order: index + 1 
-        }));
-
-        const newItems = [...items];
-        
-        newItems[chapterIndex] = {
-          ...chapterToUpdate,
-          lessons: updatedChapterForState,
-        };
-         
-        const previousItems = [...items]
-
-        setItems(newItems)
+        setItems(updatedItems);
       }
     }
 
@@ -230,7 +220,7 @@ export default function CourseStructure({data}:iAppProps) {
                         strategy={verticalListSortingStrategy}
                       >
                         {item.lessons.map((lesson) => (
-                          <SortableItem key={lesson.id} id={lesson.id} data={{type: "lesson"}}>
+                          <SortableItem key={lesson.id} id={lesson.id} data={{type: "lesson", chapterId: item.id}}>
                             {(listeners) => (
                               <div className="flex items-center justify-between gap-2 hover:bg-accent rounded-md">
                                 <div className="flex items-center gap-2">
