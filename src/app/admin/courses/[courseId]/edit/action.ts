@@ -3,7 +3,8 @@
 import { requireAdmin } from "@/app/data/admin/require-admin"
 import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/type";
-import { courseSchema, CourseSchemaType } from "@/lib/zod.Schema";
+import { chapterSchema, chapterSchemaType, courseSchema, CourseSchemaType } from "@/lib/zod.Schema";
+import { revalidatePath } from "next/cache";
 
 export async function editCourse(data: CourseSchemaType,coursId: string): Promise<ApiResponse> {
     const user = await requireAdmin();
@@ -99,3 +100,53 @@ export async function reorderChapters(
     return { status: 'error', message: 'Failed to update chapter order' };
   }
 }  
+
+export async function createChapter(values: chapterSchemaType):Promise<ApiResponse> {
+  await requireAdmin();
+  try{
+
+    const result = chapterSchema.safeParse(values);
+
+    if(!result.success){
+      return{
+        status:"error",
+        message:"invalid data"
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const maxPos = await tx.chapter.findFirst({
+        where: {
+          courseId: result.data.courseId,
+        },
+        select: {
+          position: true,
+        },
+        orderBy: {
+          position: "desc",
+        }
+      });
+      
+      await tx.chapter.create({
+        data: {
+          title: result.data.name,
+          courseId: result.data.courseId,
+          position: (maxPos?.position ?? 0) + 1,
+        }
+      })
+
+      revalidatePath(`/admin/courses/${result.data.courseId}/edit`);
+    });
+    return {
+      status: 'success',
+      message: 'Chapter created successfully'
+    };
+  } catch {
+    return {
+      status: 'error',
+      message: "Failed to create chapter"
+    }
+  }
+
+  
+}
