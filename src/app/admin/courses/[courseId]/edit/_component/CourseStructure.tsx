@@ -3,7 +3,7 @@
 import { DndContext, DraggableSyntheticListeners, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { AdminCourseSingularType } from '@/app/data/admin/admin-get-cours';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
@@ -12,6 +12,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, FileText, Ghost, GripVertical, 
 import { CollapsibleTrigger } from '@radix-ui/react-collapsible';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { reorderLessons, reorderChapters } from '../action';
 
 interface iAppProps {
   data:AdminCourseSingularType
@@ -42,6 +43,20 @@ export default function CourseStructure({data}:iAppProps) {
   })) || [];
 
   const [items, setItems] = useState(initialItems);
+
+  useEffect(() => {
+    setItems(data.chapters.map((chapter) => ({
+      id:chapter.id,
+      title: chapter.title,
+      order: chapter.position,
+      isOpen:true,
+      lessons: chapter.lesson.map((lesson) => ({
+        id:lesson.id,
+        title:lesson.title,
+        order:lesson.position
+      }))
+    })) || []);
+  }, [data]);
 
   function toggleChapter(chapterId:string){
     setItems(
@@ -102,6 +117,17 @@ export default function CourseStructure({data}:iAppProps) {
         const previousItems = [...items]
 
         setItems(updatedChapterForState)
+
+        // Persist to backend
+        reorderChapters(courseId, updatedChapterForState.map(c => ({ id: c.id, order: c.order })))
+          .then(res => {
+            if(res.status === 'success') {
+              toast.success('Chapter order updated!');
+            } else {
+              toast.error(res.message || 'Failed to update chapter order');
+            }
+          })
+          .catch(() => toast.error('Failed to update chapter order'));
       }
 
       if(activeType === 'lesson' && overType === 'lesson'){
@@ -143,6 +169,17 @@ export default function CourseStructure({data}:iAppProps) {
         );
 
         setItems(updatedItems);
+
+        // Persist to backend
+        reorderLessons(chapterId, updatedLessons.map(l => ({ id: l.id, order: l.order })))
+          .then(res => {
+            if(res.status === 'success') {
+              toast.success('Lesson order updated!');
+            } else {
+              toast.error(res.message || 'Failed to update lesson order');
+            }
+          })
+          .catch(() => toast.error('Failed to update lesson order'));
       }
     }
 
