@@ -151,7 +151,7 @@ export default function Uploader({onChange,value}:UploaderProps) {
       );
 
       if(tooManyFiles) {
-        toast.error("To many files selected, max is 1")
+        toast.error("Too many filesselected, max is 1")
       }
 
       const fileSizeBig = fileRejections.find((rejection) =>
