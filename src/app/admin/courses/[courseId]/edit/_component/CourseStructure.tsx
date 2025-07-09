@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { reorderLessons, reorderChapters } from '../action';
 import NewChapterModel from './NewChapterModel';
+import NewLessonModel from './NewLessonModel';
 
 interface iAppProps {
   data:AdminCourseSingularType
@@ -279,14 +280,7 @@ export default function CourseStructure({data}:iAppProps) {
                           </SortableItem>
                         ))}
                       </SortableContext>
-                      <Button
-                        className="mt-1 w-full"
-                        variant="outline"
-                        size="sm"
-                        // onClick={...} // Add your handler here
-                      >
-                        + Create New Lesson
-                      </Button>
+                      <NewLessonModel chapterId={item.id} courseId={data.id} />
                     </div>
                     </CollapsibleContent>
                         </Collapsible>  
