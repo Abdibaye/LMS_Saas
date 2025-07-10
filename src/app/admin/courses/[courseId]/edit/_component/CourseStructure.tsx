@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { reorderLessons, reorderChapters } from '../action';
 import NewChapterModel from './NewChapterModel';
 import NewLessonModel from './NewLessonModel';
+import DeleteLesson from './DeleteLesson';
+import DeleteChapter from './DeleteChapter';
 
 interface iAppProps {
   data:AdminCourseSingularType
@@ -251,9 +253,7 @@ export default function CourseStructure({data}:iAppProps) {
                         </CollapsibleTrigger>
                         <p className='cursor-pointer hover:text-primary'>{item.title}</p>
                       </div>
-                      <Button variant={"ghost"} size={"icon"} >
-                        <Trash2 className='size-4' />
-                      </Button>
+                      <DeleteChapter chapterId={item.id} courseId={data.id} />
                     </div>
                     <CollapsibleContent>
                     <div className='p-1 '>
@@ -272,9 +272,7 @@ export default function CourseStructure({data}:iAppProps) {
                                   <FileText className='size-4' />
                                   <Link href={`/admin/courses/${data.id}/edit/lessons/${lesson.id}`} className='text-sm text-muted-foreground hover:text-primary'>{lesson.title}</Link>
                                 </div>
-                                <Button variant={"ghost"} size={"icon"} >
-                                  <Trash2 className='size-4' />
-                                </Button>
+                                <DeleteLesson chapterId={item.id} courseId={data.id} lessonId={lesson.id} />
                               </div>
                             )}
                           </SortableItem>
